@@ -1,0 +1,46 @@
+# PDF To Barcode OCR - Aws Lambda
+
+I needed a simple lambda function that takes the URL of a PDF document and returns all the found QRCode from that document.
+
+To build the docker container
+````
+docker build -t pdf-ocr-lambda:latest .
+````
+
+To push the docker container into AWS ECR ( make sure you replace the AWS region and AWS Account ID in the command line :
+
+````
+aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 123456.dkr.ecr.us-east-2.amazonaws.com
+docker tag pdf-ocr-lambda:latest 123456.dkr.ecr.us-east-2.amazonaws.com/pdf-ocr-lambda:latest
+docker push 123456.dkr.ecr.us-east-2.amazonaws.com/pdf-ocr-lambda:latest
+````
+
+To test locally a PDF convertion
+````
+docker run -p 9000:8080 qrcode-lambda:latest
+curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"body": "{\"url\": \"http://url.to/your.pdf\"}"}'
+````
+
+The format of the POST request : 
+````
+{
+  "url":"http://url.to/your.pdf"
+}
+````
+
+And a sample response : 
+````
+[
+  {
+    "data": "YOUR_QR_CODE",
+    "type": "QRCODE",
+    "position": [194,182,72,73],
+    "polygon": [
+      [194,182],
+      [194,254],
+      [266,255],
+      [266,182]
+    ]
+  }
+]
+````
